@@ -1,0 +1,20 @@
+{
+  "name": "Discord Text Style Swap",
+  "id": "1106623515661490422",
+  "api": "1.0.0",
+  "main": "dist/index.js",
+  "editorType": [
+    "figma"
+  ],
+  "parameterOnly": true,
+  "parameters": [
+    {
+      "name": "Old style name",
+      "key": "old-style"
+    },
+    {
+      "name": "New style name",
+      "key": "new-style"
+    }
+  ]
+}
