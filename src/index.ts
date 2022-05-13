@@ -1,14 +1,13 @@
 import { Style } from "../types";
 import { sleep } from "./helpers";
-import { TEXT_STYLES } from "./text-styles";
+import { HEADING_PREFIX, TEXT_PREFIX, TEXT_STYLES } from "./text-styles";
+import listIconSvg from "bundle-text:../list-icon.svg";
 
 type RemoteStyles = typeof TEXT_STYLES;
 
-// figma.skipInvisibleInstanceChildren = true;
-
 let numberOfNotFoundStyleIds = 0;
 let nodesScanned = 0;
-let allTextNodes = [];
+let allTextNodes: TextNode[] = [];
 
 const priorityStyleOrder = TEXT_STYLES.map((s) => s.name);
 
@@ -33,26 +32,29 @@ function crawlChildren(nodes: readonly SceneNode[]) {
 }
 
 async function loadAllRemoteStyles(): Promise<Style[]> {
-  const ids = [];
+  const ids: Style[] = [];
 
   const load = (styles: RemoteStyles) =>
     styles.map(async (style) => {
       return figma.importStyleByKeyAsync(style.key).then((figmaStyle) => {
         ids.push({
           name: figmaStyle.name,
-          data: figmaStyle.id,
+          icon: listIconSvg,
+          data: {
+            // this is weird, but we have to include the name in the data as well so we can do some filtering later
+            name: figmaStyle.name,
+            id: figmaStyle.id,
+          },
         });
       });
     });
 
   await Promise.all(load(TEXT_STYLES));
 
-  ids.sort(styleSort);
-
-  return ids;
+  return ids.sort(styleSort);
 }
 
-async function getStyleIdsWithName() {
+async function getStyleIdsWithName(): Promise<Style[]> {
   const uniqueStyleIds = [];
 
   for (var i = 0; i < allTextNodes.length; i++) {
@@ -85,12 +87,16 @@ async function getStyleIdsWithName() {
       return style
         ? {
             name: style.name,
-            data: styleId,
+            icon: listIconSvg,
+            data: {
+              name: style.name,
+              id: styleId,
+            },
           }
         : null;
     })
     .filter((n) => n)
-    .sort(styleSort);
+    .sort(styleSort) as Style[];
 }
 
 // check if node contains old style and transform to new style
@@ -99,19 +105,21 @@ async function convertOldToNewStyle(parameters: ParameterValues) {
 
   allTextNodes.forEach((node) => {
     if (typeof node.textStyleId === "symbol") {
-      node.getStyledTextSegments(["textStyleId"]).forEach((segment) => {
-        const isSegmentStyleExist = parameters.hasOwnProperty(
-          segment.textStyleId
-        );
-        if (isSegmentStyleExist) {
-          numberOfNodesUpdated += 1;
-          node.setRangeTextStyleId(
-            segment.start,
-            segment.end,
-            parameters[segment.textStyleId]
+      node
+        .getStyledTextSegments(["textStyleId"])
+        .forEach((segment: StyledTextSegment) => {
+          const isSegmentStyleExist = parameters.hasOwnProperty(
+            segment.textStyleId
           );
-        }
-      });
+          if (isSegmentStyleExist) {
+            numberOfNodesUpdated += 1;
+            node.setRangeTextStyleId(
+              segment.start,
+              segment.end,
+              parameters[segment.textStyleId]
+            );
+          }
+        });
     } else if (parameters.hasOwnProperty(node.textStyleId)) {
       numberOfNodesUpdated += 1;
       node.textStyleId = parameters[node.textStyleId];
@@ -139,10 +147,10 @@ async function startPluginWithParameters(parameters: ParameterValues) {
   }
 }
 
-figma.on("run", async ({ command, parameters }: RunEvent) => {
+figma.on("run", async ({ parameters }: RunEvent) => {
   if (parameters) {
     const mappedParameters = {};
-    mappedParameters[parameters["old-style"]] = parameters["new-style"];
+    mappedParameters[parameters["old-style"].id] = parameters["new-style"].id;
 
     await startPluginWithParameters(mappedParameters);
     figma.closePlugin();
@@ -154,8 +162,8 @@ async function runPlugin() {
 
   console.log(`Scanned ${nodesScanned} nodes`);
 
-  const ids = await getStyleIdsWithName();
-  const newIds = await loadAllRemoteStyles();
+  const foundStyles = await getStyleIdsWithName();
+  const remoteStyles = await loadAllRemoteStyles();
 
   figma.parameters.on(
     "input",
@@ -170,20 +178,53 @@ async function runPlugin() {
         return;
       }
 
+      if (foundStyles.length === 0) {
+        result.setError("No text styles found in your selection");
+        return;
+      }
+
       switch (key) {
         case "old-style":
           result.setSuggestions(
-            ids.filter((s) =>
+            foundStyles.filter((s) =>
               s.name.toLowerCase().includes(query.toLowerCase())
             )
           );
           break;
         case "new-style":
-          result.setSuggestions(
-            newIds.filter((s) =>
-              s.name.toLowerCase().includes(query.toLowerCase())
-            )
-          );
+          const oldStyle = parameters["old-style"];
+          const oldStyleName = oldStyle.name.toLowerCase();
+
+          let oldStylePrefix: string;
+
+          // If the old-style param contains one of our remote styles and the name starts with one of our text/heading prefixes
+          if (
+            remoteStyles.some((s) => s.data.id === oldStyle.id) &&
+            (oldStyleName.startsWith(TEXT_PREFIX) ||
+              oldStyleName.startsWith(HEADING_PREFIX))
+          ) {
+            oldStylePrefix = oldStyleName.split("/")[0] || "";
+          }
+
+          if (query) {
+            result.setSuggestions(
+              remoteStyles.filter((s) =>
+                s.name.toLowerCase().includes(query.toLowerCase())
+              )
+            );
+          } else {
+            result.setSuggestions(
+              remoteStyles.filter((s) => {
+                const styleId = s.data.id;
+                const styleName = s.data.name.toLowerCase();
+
+                return (
+                  styleId !== oldStyle.id && // Remove the same style, since this would do nothing
+                  styleName.includes(oldStylePrefix || "") // Only show other styles with-in the same 'prefix'
+                );
+              })
+            );
+          }
           break;
         default:
           return;

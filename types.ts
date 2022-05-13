@@ -1,4 +1,8 @@
 export type Style = {
   name: string;
-  data: any;
+  icon: string;
+  data: {
+    name: string;
+    id: string;
+  };
 };

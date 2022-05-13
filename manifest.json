@@ -10,11 +10,13 @@
   "parameters": [
     {
       "name": "Old style name",
-      "key": "old-style"
+      "key": "old-style",
+      "allowFreeform": false
     },
     {
       "name": "New style name",
-      "key": "new-style"
+      "key": "new-style",
+      "allowFreeform": false
     }
   ]
 }

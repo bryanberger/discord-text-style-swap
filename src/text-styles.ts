@@ -1,3 +1,5 @@
+export const TEXT_PREFIX = "text-";
+export const HEADING_PREFIX = "heading-";
 export const TEXT_STYLES = [
   {
     name: "text-xxs/normal",
@@ -78,5 +80,65 @@ export const TEXT_STYLES = [
   {
     name: "text-lg/bold",
     key: "7f21f839937d254b44ba57471f9d10e97df2b9a4",
+  },
+  {
+    name: "heading-sm/normal",
+    key: "dfae0107fe3c79360b04119a8545d1736b20206d",
+  },
+  {
+    name: "heading-sm/medium",
+    key: "d348d390ed59e5eb874363f8dfaf54eb8b5cec13",
+  },
+  {
+    name: "heading-sm/bold",
+    key: "599a07b7e54e27621d7906d7a11a529059e85c0a",
+  },
+  {
+    name: "heading-md/normal",
+    key: "b178590d400cf44121a29c3d87e0d54a2a90ab35",
+  },
+  {
+    name: "heading-md/medium",
+    key: "9d1666163da3fdfe78b04854a27641531310a581",
+  },
+  {
+    name: "heading-md/bold",
+    key: "b5d594e307c39a87990e747ac632ff6cf45722e2",
+  },
+  {
+    name: "heading-lg/normal",
+    key: "40a526a148aab67fa7015c3d596131815600789a",
+  },
+  {
+    name: "heading-lg/medium",
+    key: "14c722483c24d4301cd83b2506786c2cd311dd55",
+  },
+  {
+    name: "heading-lg/bold",
+    key: "972a58c22a41c9a861e068798d56955cf9757d8b",
+  },
+  {
+    name: "heading-xl/normal",
+    key: "f77262a7dd580c14b79ebf8c4f2df9d2cc2f8e3e",
+  },
+  {
+    name: "heading-xl/medium",
+    key: "749554138aae701abf8ca5226beb65564459b751",
+  },
+  {
+    name: "heading-xl/bold",
+    key: "dc5acd46df325876ed829d1d74992ce5304880e8",
+  },
+  {
+    name: "heading-xxl/normal",
+    key: "537159669429ce8f4e66881c503977142ce72352",
+  },
+  {
+    name: "heading-xxl/medium",
+    key: "ab70339c05d60e3e0325c8818193bcff1db3c0b0",
+  },
+  {
+    name: "heading-xxl/bold",
+    key: "aa852bfb56bdb59bd21d8d82dd6f429e3bf17c37",
   },
 ];

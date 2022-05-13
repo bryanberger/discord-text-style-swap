@@ -29,6 +29,7 @@
   "homepage": "https://github.com/six7/style-swap#readme",
   "devDependencies": {
     "@figma/plugin-typings": "*",
+    "@parcel/transformer-inline-string": "^2.5.0",
     "parcel": "^2.5.0"
   }
 }
