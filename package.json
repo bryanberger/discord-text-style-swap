@@ -1,6 +1,6 @@
 {
   "name": "discord-text-style-swap",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A figma plugin to swap styles, forked from Jan Six",
   "main": "dist/index.js",
   "source": "src/index.ts",
